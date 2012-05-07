@@ -24,6 +24,7 @@ from djangobb_forum.templatetags import forum_extras
 from djangobb_forum import settings as forum_settings
 from djangobb_forum.util import smiles, convert_text_to_html
 from djangobb_forum.templatetags.forum_extras import forum_moderated_by
+from django.utils.translation import get_language
 
 from haystack.query import SearchQuerySet, SQ
 
@@ -40,11 +41,14 @@ def index(request, full=True):
     user_groups = request.user.groups.all()
     if request.user.is_anonymous():  # in django 1.1 EmptyQuerySet raise exception
         user_groups = []
-    _forums = Forum.objects.filter(
-            Q(category__groups__in=user_groups) | \
-            Q(category__groups__isnull=True)).select_related('last_post__topic',
-                                                            'last_post__user',
-                                                            'category')
+
+    _categories = Category.objects\
+        .filter(language=get_language())\
+        .filter(Q(groups__in=user_groups)|Q(groups__isnull=True))\
+
+    _forums = Forum.objects.filter(category__in=_categories)\
+        .select_related('last_post__topic', 'last_post__user', 'category')
+
     for forum in _forums:
         cat = cats.setdefault(forum.category.id,
             {'id': forum.category.id, 'cat': forum.category, 'forums': []})

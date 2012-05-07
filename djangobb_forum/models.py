@@ -60,6 +60,7 @@ class Category(models.Model):
     name = models.CharField(_('Name'), max_length=80)
     groups = models.ManyToManyField(Group,blank=True, null=True, verbose_name=_('Groups'), help_text=_('Only users from these groups can see this category'))
     position = models.IntegerField(_('Position'), blank=True, default=0)
+    language = models.CharField(_('Language'), max_length=6, default=settings.LANGUAGE_CODE)
 
     class Meta:
         ordering = ['position']

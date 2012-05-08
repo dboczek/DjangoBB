@@ -2,9 +2,9 @@
 from setuptools import setup, find_packages
 from djangobb_forum import get_version
 
-setup(name='djangobb_forum',
+setup(name='djangobb_forum_ml',
     version=get_version(),
-    description='DjangoBB is a quick and simple forum which uses the Django Framework.',
+    description='DjangoBB is a quick and simple forum which uses the Django Framework. Multilanguage fork.',
     license='BSD',
     url='http://djangobb.org/',
     author='Alexey Afinogenov, Maranchuk Sergey',

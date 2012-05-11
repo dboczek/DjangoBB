@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
+import re
 
 def get(key, default):
     return getattr(settings, key, default)
@@ -89,3 +90,6 @@ SMILES = ((r'(:|=)\)', EMOTION_SMILE), #:), =)
           (r':cool:', EMOTION_COOL)
          )
 SMILES = get('DJANGOBB_SMILES', SMILES)
+
+BAN_EXEMPT_URLS = [re.compile(expr) for expr in get('DJANGOBB_BAN_EXEMPT_URLS', [])]
+

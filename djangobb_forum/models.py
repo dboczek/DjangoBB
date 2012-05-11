@@ -360,8 +360,9 @@ class Report(models.Model):
     def __unicode__(self):
         return u'%s %s' % (self.reported_by ,self.zapped)
 
+
 class Ban(models.Model):
-    user = models.OneToOneField(User, verbose_name=_('Banned user'), related_name='ban_users')
+    user = models.OneToOneField(User, verbose_name=_('Banned user'), related_name='ban')
     ban_start = models.DateTimeField(_('Ban start'), default=datetime.now)
     ban_end = models.DateTimeField(_('Ban end'), blank=True, null=True)
     reason = models.TextField(_('Reason'))
@@ -372,16 +373,6 @@ class Ban(models.Model):
 
     def __unicode__(self):
         return self.user.username
-
-    def save(self, *args, **kwargs):
-        self.user.is_active = False
-        self.user.save()
-        super(Ban, self).save(*args, **kwargs)
-
-    def delete(self, *args, **kwargs):
-        self.user.is_active = True
-        self.user.save()
-        super(Ban, self).delete(*args, **kwargs)
 
 
 class Attachment(models.Model):
@@ -414,3 +405,9 @@ from .signals import post_saved, topic_saved
 
 post_save.connect(post_saved, sender=Post, dispatch_uid='djangobb_post_save')
 post_save.connect(topic_saved, sender=Topic, dispatch_uid='djangobb_topic_save')
+
+
+def is_user_banned(user):
+    return Ban.objects.filter(user=user).exists()
+
+

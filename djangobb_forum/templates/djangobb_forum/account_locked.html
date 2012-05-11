@@ -7,7 +7,7 @@
 <div class="linkst">
 	<div class="inbox">
 
-    <p>{% trans "Ban reason:" %}&nbsp;<em>{{ ban.reason }}</em></p>
+    <p>{% trans "Ban reason:" %} <em>{{ ban.reason }}</em></p>
 
     {% if ban.ban_end %}
     <p>{% blocktrans with ban.ban_end|date as date %}Your account is blocked until {{ date }}.{% endblocktrans %}</p>

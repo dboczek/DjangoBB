@@ -1,0 +1,18 @@
+{% extends "djangobb_forum/base.html" %}
+{% block content %}
+
+<h2>{% trans "You have been banned and you can't perform this operation." %}</h2>
+
+<div class="linkst">
+	<div class="inbox">
+
+    <p>{% trans "Ban reason:" %} <em>{{ ban.reason }}</em></p>
+
+    {% if ban.ban_end %}
+    <p>{% blocktrans with ban.ban_end|date as date %}Your account is blocked until {{ date }}.{% endblocktrans %}</p>
+    {% endif %}
+
+  </div>
+</div>
+
+{% endblock %}

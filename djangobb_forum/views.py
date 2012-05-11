@@ -24,6 +24,8 @@ from djangobb_forum.templatetags import forum_extras
 from djangobb_forum import settings as forum_settings
 from djangobb_forum.util import smiles, convert_text_to_html
 from djangobb_forum.templatetags.forum_extras import forum_moderated_by
+from djangobb_forum.decorators import require_unbanned_user
+from djangobb_forum.auth import unbanned_user_requirement
 from django.utils.translation import get_language
 
 from haystack.query import SearchQuerySet, SQ
@@ -199,6 +201,7 @@ def search(request):
 
 
 @login_required
+@require_unbanned_user
 def misc(request):
     if 'action' in request.GET:
         action = request.GET['action']
@@ -299,6 +302,7 @@ def show_topic(request, topic_id, full=True):
 
 
 @login_required
+@require_unbanned_user
 @transaction.commit_on_success
 def add_post(request, forum_id, topic_id):
     forum = None
@@ -338,6 +342,8 @@ def add_post(request, forum_id, topic_id):
             })
 
 
+@login_required
+@require_unbanned_user
 @transaction.commit_on_success
 def upload_avatar(request, username, template=None, form_class=None):
     user = get_object_or_404(User, username=username)
@@ -359,6 +365,8 @@ def upload_avatar(request, username, template=None, form_class=None):
                })
 
 
+@login_required
+@require_unbanned_user
 @transaction.commit_on_success
 def delete_avatar(request, username, section=None, action=None, template=None, form_class=None):
     user = get_object_or_404(User, username=username)
@@ -380,7 +388,7 @@ def delete_avatar(request, username, section=None, action=None, template=None, f
 @transaction.commit_on_success
 def user(request, username, section='essentials', action=None, template='djangobb_forum/profile/profile_essentials.html', form_class=EssentialsProfileForm):
     user = get_object_or_404(User, username=username)
-    if request.user.is_authenticated() and user == request.user or request.user.is_superuser:
+    if unbanned_user_requirement(request.user) and user == request.user or request.user.is_superuser:
         profile_url = reverse('djangobb:forum_profile_%s' % section, args=[user.username])
         form = build_form(form_class, request, instance=user.forum_profile, extra_args={'request': request})
         if request.method == 'POST' and form.is_valid():
@@ -401,6 +409,7 @@ def user(request, username, section='essentials', action=None, template='djangob
 
 
 @login_required
+@require_unbanned_user
 @transaction.commit_on_success
 def reputation(request, username):
     user = get_object_or_404(User, username=username)
@@ -451,6 +460,7 @@ def show_post(request, post_id):
 
 
 @login_required
+@require_unbanned_user
 @transaction.commit_on_success
 def edit_post(request, post_id):
     from djangobb_forum.templatetags.forum_extras import forum_editable_by
@@ -472,6 +482,7 @@ def edit_post(request, post_id):
 
 
 @login_required
+@require_unbanned_user
 @transaction.commit_on_success
 def delete_posts(request, topic_id):
 
@@ -516,6 +527,7 @@ def delete_posts(request, topic_id):
 
 
 @login_required
+@require_unbanned_user
 @transaction.commit_on_success
 def move_topic(request):
     if 'topic_id' in request.GET:
@@ -554,6 +566,7 @@ def move_topic(request):
 
 
 @login_required
+@require_unbanned_user
 @transaction.commit_on_success
 def stick_unstick_topic(request, topic_id, action):
 
@@ -568,6 +581,7 @@ def stick_unstick_topic(request, topic_id, action):
 
 
 @login_required
+@require_unbanned_user
 @transaction.commit_on_success
 def delete_post(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
@@ -596,6 +610,7 @@ def delete_post(request, post_id):
 
 
 @login_required
+@require_unbanned_user
 @transaction.commit_on_success
 def open_close_topic(request, topic_id, action):
 
@@ -619,6 +634,7 @@ def users(request):
 
 
 @login_required
+@require_unbanned_user
 @transaction.commit_on_success
 def delete_subscription(request, topic_id):
     topic = get_object_or_404(Topic, pk=topic_id)
@@ -630,6 +646,7 @@ def delete_subscription(request, topic_id):
 
 
 @login_required
+@require_unbanned_user
 @transaction.commit_on_success
 def add_subscription(request, topic_id):
     topic = get_object_or_404(Topic, pk=topic_id)
@@ -638,6 +655,7 @@ def add_subscription(request, topic_id):
 
 
 @login_required
+@require_unbanned_user
 def show_attachment(request, hash):
     attachment = get_object_or_404(Attachment, hash=hash)
     file_data = file(attachment.get_absolute_path(), 'rb').read()
@@ -647,6 +665,7 @@ def show_attachment(request, hash):
 
 
 @login_required
+@require_unbanned_user
 @csrf_exempt
 def post_preview(request):
     '''Preview for markitup'''

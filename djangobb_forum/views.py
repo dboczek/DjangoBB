@@ -51,6 +51,9 @@ def index(request, full=True):
     _forums = Forum.objects.filter(category__in=_categories)\
         .select_related('last_post__topic', 'last_post__user', 'category')
 
+    _topics = Topic.objects.filter(forum__in=_forums)
+    _posts = Post.objects.filter(topic__in=_topics)
+
     for forum in _forums:
         cat = cats.setdefault(forum.category.id,
             {'id': forum.category.id, 'cat': forum.category, 'forums': []})
@@ -61,8 +64,8 @@ def index(request, full=True):
     cats = sorted(cats.values(), cmpdef)
 
     to_return = {'cats': cats,
-                'posts': Post.objects.count(),
-                'topics': Topic.objects.count(),
+                'posts': _posts.count(),
+                'topics': _topics.count(),
                 'users': User.objects.count(),
                 'users_online': users_online,
                 'online_count': users_count,

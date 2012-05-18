@@ -1,6 +1,6 @@
 __all__ = ['__version__', 'get_version']
 
-version_info = (0, 0, 3, 'a', 0)
+version_info = (0, 0, 3, 'a', 1)
 # format: ('major', 'minor', 'micro', 'releaselevel', 'serial')
 # __version__ format compatible with distutils2.version.NormalizedVersion
 

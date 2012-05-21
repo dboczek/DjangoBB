@@ -194,7 +194,7 @@ def search(request):
                     posts = posts.exclude(topics_to_exclude)
                 return render(request, 'djangobb_forum/search_topics.html', {'results': topics})
             elif 'posts' in request.GET['show_as']:
-                return render(request, 'djangobb_forum/search_posts.html', {'results': topics})
+                return render(request, 'djangobb_forum/search_posts.html', {'results': posts})
         return render(request, 'djangobb_forum/search_topics.html', {'results': topics})
     else:
         form = PostSearchForm()

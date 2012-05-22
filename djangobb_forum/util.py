@@ -174,10 +174,15 @@ def urlize(data):
     parser.close()
     return urlized_html
 
+
 def _smile_replacer(data):
     for smile, path in _SMILES:
+        path = path.replace('/', '##/##')
+        path = path.replace(':', '##:##')
         data = smile.sub(path, data)
-    return data
+    data = data.replace('##/##', '/')
+    data = data.replace('##:##', ':')
+
 
 def smiles(data):
     """

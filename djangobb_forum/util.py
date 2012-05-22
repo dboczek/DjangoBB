@@ -182,6 +182,7 @@ def _smile_replacer(data):
         data = smile.sub(path, data)
     data = data.replace('##/##', '/')
     data = data.replace('##:##', ':')
+    return data
 
 
 def smiles(data):

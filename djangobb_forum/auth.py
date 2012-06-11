@@ -8,5 +8,5 @@ def unbanned_user_requirement(user):
 
 
 def isa_forum_moderator(forum, user):
-    return user.has_perm('djangobb_forum.change_forum') or user in forum.moderators.all()
+    return user.has_perm('djangobb_forum.can_moderate_forum') or user in forum.moderators.all()
 

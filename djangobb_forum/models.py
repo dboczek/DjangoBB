@@ -106,6 +106,7 @@ class Forum(models.Model):
         ordering = ['position']
         verbose_name = _('Forum')
         verbose_name_plural = _('Forums')
+        permissions = (('can_moderate_forum', 'Can moderate forum'),)
 
     def __unicode__(self):
         return self.name

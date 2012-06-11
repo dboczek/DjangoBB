@@ -25,10 +25,12 @@ from djangobb_forum import settings as forum_settings
 from djangobb_forum.util import smiles, convert_text_to_html
 from djangobb_forum.templatetags.forum_extras import forum_moderated_by
 from djangobb_forum.decorators import require_unbanned_user
-from djangobb_forum.auth import unbanned_user_requirement
+from djangobb_forum.auth import unbanned_user_requirement, isa_forum_moderator
 from django.utils.translation import get_language
 
 from haystack.query import SearchQuerySet, SQ
+
+
 
 
 def index(request, full=True):
@@ -82,7 +84,7 @@ def index(request, full=True):
 def moderate(request, forum_id):
     forum = get_object_or_404(Forum, pk=forum_id)
     topics = forum.topics.order_by('-sticky', '-updated').select_related()
-    if request.user.is_superuser or request.user in forum.moderators.all():
+    if isa_forum_moderator(forum, request.user):
         topic_ids = request.POST.getlist('topic_id')
         if 'move_topics' in request.POST:
             return render(request,  'djangobb_forum/move_topic.html', {
@@ -247,8 +249,7 @@ def show_forum(request, forum_id, full=True):
     if not forum.category.has_access(request.user):
         return HttpResponseForbidden()
     topics = forum.topics.order_by('-sticky', '-updated').select_related()
-    moderator = request.user.is_superuser or\
-        request.user in forum.moderators.all()
+    moderator = isa_forum_moderator(forum, request.user)
     to_return = {'categories': Category.objects.all(),
                 'forum': forum,
                 'posts': forum.post_count,
@@ -279,8 +280,7 @@ def show_topic(request, topic_id, full=True):
         initial = {'markup': request.user.forum_profile.markup}
     form = AddPostForm(topic=topic, initial=initial)
 
-    moderator = request.user.is_superuser or\
-        request.user in topic.forum.moderators.all()
+    moderator = isa_forum_moderator(topic.forum, request.user)
     if request.user.is_authenticated() and request.user in topic.subscribers.all():
         subscribed = True
     else:
@@ -350,7 +350,7 @@ def add_post(request, forum_id, topic_id):
 @transaction.commit_on_success
 def upload_avatar(request, username, template=None, form_class=None):
     user = get_object_or_404(User, username=username)
-    if request.user.is_authenticated() and user == request.user or request.user.is_superuser:
+    if user == request.user or request.user.is_superuser:
         form = build_form(form_class, request, instance=user.forum_profile)
         if request.method == 'POST' and form.is_valid():
             form.save()
@@ -513,8 +513,7 @@ def delete_posts(request, topic_id):
         initial = {'markup': request.user.forum_profile.markup}
     form = AddPostForm(topic=topic, initial=initial)
 
-    moderator = request.user.is_superuser or\
-        request.user in topic.forum.moderators.all()
+    moderator = isa_forum_moderator(topic.forum, request.user)
     if request.user.is_authenticated() and request.user in topic.subscribers.all():
         subscribed = True
     else:
@@ -593,8 +592,7 @@ def delete_post(request, post_id):
     forum = post.topic.forum
 
     allowed = False
-    if request.user.is_superuser or\
-        request.user in post.topic.forum.moderators.all() or \
+    if isa_forum_moderator(post.topic.forum, request.user) or \
         (post.user == request.user and post == last_post):
         allowed = True
 

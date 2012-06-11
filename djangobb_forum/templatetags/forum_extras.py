@@ -14,6 +14,7 @@ from django.contrib.humanize.templatetags.humanize import naturalday
 from pagination.templatetags.pagination_tags import paginate
 
 from djangobb_forum.models import Report
+from djangobb_forum.auth import isa_forum_moderator
 from djangobb_forum import settings as forum_settings
 
 
@@ -162,8 +163,7 @@ def forum_moderated_by(topic, user):
     """
     Check if user is moderator of topic's forum.
     """
-
-    return user.is_superuser or user in topic.forum.moderators.all()
+    return isa_forum_moderator(topic.forum, user)
 
 
 @register.filter
@@ -171,14 +171,7 @@ def forum_editable_by(post, user):
     """
     Check if the post could be edited by the user.
     """
-
-    if user.is_superuser:
-        return True
-    if post.user == user:
-        return True
-    if user in post.topic.forum.moderators.all():
-        return True
-    return False
+    return user==post.user or isa_forum_moderator(post.topic.forum, user)
 
 
 @register.filter

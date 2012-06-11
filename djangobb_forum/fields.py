@@ -51,12 +51,18 @@ class ExtendedImageField(models.ImageField):
         super(ExtendedImageField, self).__init__(*args, **kwargs)
 
     def save_form_data(self, instance, data):
+        value = getattr(instance, self.name, None)
+
+        # skip image processing if not changed
+        if data and value and hasattr(data, 'path') and data.path == value.path:
+            return super(ExtendedImageField, self).save_form_data(instance, data)
+
         if data and self.width and self.height:
             content = self.resize_image(data.read(), width=self.width, height=self.height)
             salt = sha1(str(random.random())).hexdigest()[:5]
             fname =  sha1(salt + settings.SECRET_KEY).hexdigest() + '.png'
             data = SimpleUploadedFile(fname, content, data.content_type)
-        super(ExtendedImageField, self).save_form_data(instance, data)
+        return super(ExtendedImageField, self).save_form_data(instance, data)
 
     def resize_image(self, rawdata, width, height):
         """

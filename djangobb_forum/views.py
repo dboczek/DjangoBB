@@ -186,7 +186,9 @@ def search(request):
                 topics = []
                 topics_to_exclude = SQ()
                 for post in posts:
-                    if post.object.topic not in topics:
+                    if post.object is None:
+                        posts = posts.exclude(django_id=post.django_id)
+                    elif post.object.topic not in topics:
                         if post.object.topic.forum.category.has_access(request.user):
                             topics.append(post.object.topic)
                         else:

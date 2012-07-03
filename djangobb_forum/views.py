@@ -122,7 +122,7 @@ def search(request):
         #FIXME: show_user for anonymous raise exception, 
         #django bug http://code.djangoproject.com/changeset/14087 :|
         groups = request.user.groups.all() or [] #removed after django > 1.2.3 release
-        topics = Topic.objects.filter(
+        topics = Topic.objects.filter(forum__category__language=get_language()).filter(
                    Q(forum__category__groups__in=groups) | \
                    Q(forum__category__groups__isnull=True))
         if action == 'show_24h':
@@ -137,7 +137,7 @@ def search(request):
                 post_tracking = None
             if last_read:
                 last_posts = dict(map(lambda x: (str(x[0]), x[1]), topics.values_list('pk', 'last_post')))
-                read_posts = post_tracking.topics if post_tracking else {}
+                read_posts = (post_tracking.topics if post_tracking else None) or {}
 
                 unread_topics = [topic_id for topic_id, last_post_id in last_posts.items() if last_post_id>read_posts.get(str(topic_id), 0)]
                 topics = topics.filter(Q(last_post__updated__gte=last_read)|Q(last_post__created__gte=last_read))\

@@ -130,11 +130,18 @@ def search(request):
             topics = topics.filter(created__gte=date)
         elif action == 'show_new':
             try:
-                last_read = PostTracking.objects.get(user=request.user).last_read
+                post_tracking = PostTracking.objects.get(user=request.user)
+                last_read = post_tracking.last_read
             except PostTracking.DoesNotExist:
                 last_read = None
+                post_tracking = None
             if last_read:
-                topics = topics.filter(last_post__updated__gte=last_read).all()
+                last_posts = dict(map(lambda x: (str(x[0]), x[1]), topics.values_list('pk', 'last_post')))
+                read_posts = post_tracking.topics if post_tracking else {}
+
+                unread_topics = [topic_id for topic_id, last_post_id in last_posts.items() if last_post_id>read_posts.get(str(topic_id), 0)]
+                topics = topics.filter(Q(last_post__updated__gte=last_read)|Q(last_post__created__gte=last_read))\
+                        .filter(pk__in=unread_topics)
             else:
                 #searching more than forum_settings.SEARCH_PAGE_SIZE in this way - not good idea :]
                 topics = [topic for topic in topics[:forum_settings.SEARCH_PAGE_SIZE] if forum_extras.has_unreads(topic, request.user)]

@@ -122,7 +122,7 @@ def search(request):
         #FIXME: show_user for anonymous raise exception, 
         #django bug http://code.djangoproject.com/changeset/14087 :|
         groups = request.user.groups.all() or [] #removed after django > 1.2.3 release
-        topics = Topic.objects.filter(
+        topics = Topic.objects.filter(forum__category__language=get_language()).filter(
                    Q(forum__category__groups__in=groups) | \
                    Q(forum__category__groups__isnull=True))
         if action == 'show_24h':
@@ -130,11 +130,23 @@ def search(request):
             topics = topics.filter(created__gte=date)
         elif action == 'show_new':
             try:
-                last_read = PostTracking.objects.get(user=request.user).last_read
+                post_tracking = PostTracking.objects.get(user=request.user)
+                last_read = post_tracking.last_read
             except PostTracking.DoesNotExist:
                 last_read = None
+                post_tracking = None
             if last_read:
-                topics = topics.filter(last_post__updated__gte=last_read).all()
+                topics = topics.filter(Q(last_post__updated__gte=last_read)|Q(last_post__created__gte=last_read))
+                read_posts = (post_tracking.topics if post_tracking else None) or {}
+
+                def is_topic_unread(topic_id, last_post_id):
+                    return last_post_id>read_posts.get(str(topic_id),0)
+
+                unread_topics = [topic_id for topic_id, last_post_id\
+                            in topics.values_list('pk', 'last_post')\
+                            if is_topic_unread(topic_id, last_post_id)]
+
+                topics = topics.filter(pk__in=unread_topics)
             else:
                 #searching more than forum_settings.SEARCH_PAGE_SIZE in this way - not good idea :]
                 topics = [topic for topic in topics[:forum_settings.SEARCH_PAGE_SIZE] if forum_extras.has_unreads(topic, request.user)]

@@ -137,10 +137,15 @@ def search(request):
                 post_tracking = None
             if last_read:
                 topics = topics.filter(Q(last_post__updated__gte=last_read)|Q(last_post__created__gte=last_read))
-                last_posts = dict(map(lambda x: (str(x[0]), x[1]), topics.values_list('pk', 'last_post')))
                 read_posts = (post_tracking.topics if post_tracking else None) or {}
 
-                unread_topics = [topic_id for topic_id, last_post_id in last_posts.items() if last_post_id>read_posts.get(str(topic_id), 0)]
+                def is_topic_unread(topic_id, last_post_id):
+                    return last_post_id>read_posts.get(str(topic_id),0)
+
+                unread_topics = [topic_id for topic_id, last_post_id\
+                            in topics.values_list('pk', 'last_post')\
+                            if is_topic_unread(topic_id, last_post_id)]
+
                 topics = topics.filter(pk__in=unread_topics)
             else:
                 #searching more than forum_settings.SEARCH_PAGE_SIZE in this way - not good idea :]

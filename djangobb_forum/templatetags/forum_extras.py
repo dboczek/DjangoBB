@@ -148,13 +148,13 @@ def forum_unreads(forum, user):
     if not user.is_authenticated():
         return False
     else:
-        if isinstance(user.posttracking.topics, dict):
-            topics = forum.topics.all().only('last_post')
-            if user.posttracking.last_read:
-                topics = topics.filter(updated__gte=user.posttracking.last_read)
-            for topic in topics:
-                if topic.last_post_id > user.posttracking.topics.get(str(topic.id), 0):
-                    return True
+        read_topics = user.posttracking.topics or {}
+        topics = forum.topics.all().only('last_post')
+        if user.posttracking.last_read:
+            topics = topics.filter(updated__gte=user.posttracking.last_read)
+        for topic in topics:
+            if topic.last_post_id > read_topics.get(str(topic.id), 0):
+                return True
         return False
 
 

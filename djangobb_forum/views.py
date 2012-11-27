@@ -332,10 +332,14 @@ def add_post(request, forum_id, topic_id):
 
     if forum_id:
         forum = get_object_or_404(Forum, pk=forum_id)
+        if not forum.category.language == request.LANGUAGE_CODE:
+            return HttpResponseRedirect(reverse('djangobb:index'))
         if not forum.category.has_access(request.user):
             return HttpResponseForbidden()
     elif topic_id:
         topic = get_object_or_404(Topic, pk=topic_id)
+        if not topic.forum.category.language == request.LANGUAGE_CODE:
+            return HttpResponseRedirect(reverse('djangobb:index'))
         posts = topic.posts.all().select_related()
         if not topic.forum.category.has_access(request.user):
             return HttpResponseForbidden()
@@ -355,6 +359,7 @@ def add_post(request, forum_id, topic_id):
     if form.is_valid():
         post = form.save();
         return HttpResponseRedirect(post.get_absolute_url())
+
 
     return render(request, 'djangobb_forum/add_post.html', {'form': form,
             'posts': posts,

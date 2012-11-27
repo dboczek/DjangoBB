@@ -260,6 +260,8 @@ def misc(request):
 
 def show_forum(request, forum_id, full=True):
     forum = get_object_or_404(Forum, pk=forum_id)
+    if not forum.category.language == request.LANGUAGE_CODE:
+        return HttpResponseRedirect(reverse('djangobb:index'))
     if not forum.category.has_access(request.user):
         return HttpResponseForbidden()
     topics = forum.topics.order_by('-sticky', '-updated').select_related()
@@ -279,6 +281,8 @@ def show_forum(request, forum_id, full=True):
 @transaction.commit_on_success
 def show_topic(request, topic_id, full=True):
     topic = get_object_or_404(Topic.objects.select_related(), pk=topic_id)
+    if not topic.forum.category.language == request.LANGUAGE_CODE:
+        return HttpResponseRedirect(reverse('djangobb:index'))
     if not topic.forum.category.has_access(request.user):
         return HttpResponseForbidden()
     Topic.objects.filter(pk=topic.id).update(views=F('views') + 1)
@@ -470,6 +474,8 @@ def reputation(request, username):
 
 def show_post(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
+    if not post.topic.forum.category.language == request.LANGUAGE_CODE:
+        return HttpResponseRedirect(reverse('djangobb:index'))
     count = post.topic.posts.filter(created__lt=post.created).count() + 1
     page = math.ceil(count / float(forum_settings.TOPIC_PAGE_SIZE))
     url = '%s?page=%d#post-%d' % (reverse('djangobb:topic', args=[post.topic.id]), page, post.id)

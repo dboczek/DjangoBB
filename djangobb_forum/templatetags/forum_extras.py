@@ -255,7 +255,7 @@ def gravatar(context, email):
         size = max(forum_settings.AVATAR_WIDTH, forum_settings.AVATAR_HEIGHT)
         url = 'https://secure.gravatar.com/avatar/%s?' if is_secure \
                 else 'http://www.gravatar.com/avatar/%s?' 
-        url = url % md5_constructor(email.lower()).hexdigest()
+        url = url % md5_constructor(email and email.lower() or '').hexdigest()
         url += urllib.urlencode({
             'size': size,
             'default': forum_settings.GRAVATAR_DEFAULT,

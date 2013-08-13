@@ -3,6 +3,7 @@
 {% load i18n %}
 
 {% block content %}
+{% if mailto.email and request.user.email %}
 <div class="blockform">
 	<h2><span>{% trans "Send e-mail to" %} {{ mailto }}</span></h2>
 	<div class="box">
@@ -12,10 +13,7 @@
 				<fieldset>
 					<legend>{% trans "Write and submit your e-mail message" %}</legend>
 					<div class="infldset txtarea">
-						<label><strong>{{ form.subject.label }}</strong><br />
-						{{ form.subject }}<br /></label>
-						<label><strong>{{ form.body.label }}</strong><br />
-						{{ form.body }}<br /></label>
+						{{ form }}
 						<p>{% trans "Please note that by using this form, your e-mail address will be disclosed to the recipient." %}</p>
 					</div>
 				</fieldset>
@@ -24,8 +22,18 @@
 		</form>
 	</div>
 </div>
-
+{% else %}
+<div class="block">
+	<p>{% trans "You can't send email this user." %}</p>
+	{% if not request.user.email %}
+		<p>{% trans "We don't have your email address." %}</p>
+	{% endif %}
+	{% if not mailto.email %}
+		<p>{% trans "We don't have the user's email address." %}</p>
+	{% endif %}
+</div>
+{% endif %}
 {% endblock %}
 
 {% block controls %}
-{% endblock %}
+{% endblock %}}

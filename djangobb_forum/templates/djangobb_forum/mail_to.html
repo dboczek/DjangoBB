@@ -24,7 +24,7 @@
 </div>
 {% else %}
 <div class="block">
-	<p>{% trans "You can't send email this user." %}</p>
+	<p>{% trans "You can't send email to this user." %}</p>
 	{% if not request.user.email %}
 		<p>{% trans "We don't have your email address." %}</p>
 	{% endif %}

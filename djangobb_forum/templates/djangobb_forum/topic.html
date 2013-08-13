@@ -146,7 +146,7 @@
 		{% if user.is_authenticated %}
 			{% if subscribed %}
 				<a class="subscribelink clearb" href="{% url djangobb:forum_delete_subscription topic.id %}?from_topic">{% trans "Unsubscribe" %}</a>
-			{% else %}
+			{% elif user.email %}
 				<a class="subscribelink clearb" href="{% url djangobb:forum_add_subscription topic.id %}">{% trans "Subscribe" %}</a>
 			{% endif %}
 		{% endif %}

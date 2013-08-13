@@ -241,14 +241,19 @@ def misc(request):
 
     elif 'submit' in request.POST and 'mail_to' in request.GET:
         form = MailToForm(request.POST)
+        user = get_object_or_404(User, username=request.GET['mail_to'])
         if form.is_valid():
-            user = get_object_or_404(User, username=request.GET['mail_to'])
             subject = form.cleaned_data['subject']
             body = form.cleaned_data['body'] + '\n %s %s [%s]' % (Site.objects.get_current().domain,
                                                                   request.user.username,
                                                                   request.user.email)
             user.email_user(subject, body, request.user.email)
             return HttpResponseRedirect(reverse('djangobb:index'))
+        else:
+            return render(request, 'djangobb_forum/mail_to.html', {'form':form,
+                'mailto': user}
+                )
+
 
     elif 'mail_to' in request.GET:
         mailto = get_object_or_404(User, username=request.GET['mail_to'])

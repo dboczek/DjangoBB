@@ -12,6 +12,7 @@ from django.db.models.signals import post_save
 from djangobb_forum.fields import AutoOneToOneField, ExtendedImageField, JSONField
 from djangobb_forum.util import smiles, convert_text_to_html
 from djangobb_forum import settings as forum_settings
+from django.db.models.aggregates import Sum
 
 if 'south' in settings.INSTALLED_APPS:
     from south.modelsinspector import add_introspection_rules
@@ -31,8 +32,8 @@ TZ_CHOICES = [(float(x[0]), x[1]) for x in (
 )]
 
 SIGN_CHOICES = (
-    (1, 'PLUS'),
-    (-1, 'MINUS'),
+    (1, 'Like'),
+    (-1, 'Dislike'),
 )
 
 PRIVACY_CHOICES = (
@@ -260,25 +261,36 @@ class Post(models.Model):
         tail = len(self.body) > LIMIT and '...' or ''
         return self.body[:LIMIT] + tail
 
+    def likes(self):
+        likes = self.post.filter(sign=1).aggregate(Sum('sign'))['sign__sum']
+        return likes or 0
+
+    def dislikes(self):
+        dislikes = self.post.filter(sign=-1).aggregate(Sum('sign'))['sign__sum']
+        return - (dislikes or 0)
+
+    def voted(self, user):
+        vote = self.post.filter(from_user=user)
+        return vote.sign or 0
+
     __unicode__ = summary
 
 
 class Reputation(models.Model):
-    from_user = models.ForeignKey(User, related_name='reputations_from', verbose_name=_('From'))
-    to_user = models.ForeignKey(User, related_name='reputations_to', verbose_name=_('To'))
+    from_user = models.ForeignKey(User, related_name='reputations_from', verbose_name=_('Voter'))
+    to_user = models.ForeignKey(User, related_name='reputations_to', verbose_name=_('Post by'))
     post = models.ForeignKey(Post, related_name='post', verbose_name=_('Post'))
     time = models.DateTimeField(_('Time'), auto_now_add=True)
-    sign = models.IntegerField(_('Sign'), choices=SIGN_CHOICES, default=0)
-    reason = models.TextField(_('Reason'), max_length=1000)
+    sign = models.IntegerField(_('Vote'), choices=SIGN_CHOICES, default=0)
+    reason = models.TextField(_('Reason'), max_length=1000, blank=True)
 
     class Meta:
-        verbose_name = _('Reputation')
-        verbose_name_plural = _('Reputations')
+        verbose_name = _('Vote')
+        verbose_name_plural = _('Votes')
         unique_together = (('from_user', 'post'),)
 
     def __unicode__(self):
         return u'T[%d], FU[%d], TU[%d]: %s' % (self.post.id, self.from_user.id, self.to_user.id, unicode(self.time))
-
 
 class ProfileManager(models.Manager):
     use_for_related_fields = True
@@ -327,6 +339,15 @@ class Profile(models.Model):
             return posts[0].created
         else:
             return  None
+
+    def reputation(self):
+        return self.user.reputations_to.aggregate(Sum('sign'))['sign__sum'] or 0
+
+    def users_post_liked(self):
+        return self.user.reputations_to.filter(sign=1).aggregate(Sum('sign'))['sign__sum'] or 0
+
+    def users_post_disliked(self):
+        return -(self.user.reputations_to.filter(sign=-1).aggregate(Sum('sign'))['sign__sum'] or 0)
 
 class PostTracking(models.Model):
     """
@@ -410,5 +431,3 @@ post_save.connect(topic_saved, sender=Topic, dispatch_uid='djangobb_topic_save')
 
 def is_user_banned(user):
     return Ban.objects.filter(user=user).exists()
-
-

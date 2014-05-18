@@ -27,7 +27,7 @@ from djangobb_forum.templatetags.forum_extras import forum_moderated_by
 from djangobb_forum.decorators import require_unbanned_user
 from djangobb_forum.auth import unbanned_user_requirement, isa_forum_moderator
 from django.utils.translation import get_language
-
+from django.contrib.sites.models import get_current_site
 from haystack.query import SearchQuerySet, SQ
 
 
@@ -47,7 +47,7 @@ def index(request, full=True):
         user_groups = []
 
     _categories = Category.objects\
-        .filter(language=get_language())\
+        .filter(language=get_language(),site=get_current_site(request))\
         .filter(Q(groups__in=user_groups)|Q(groups__isnull=True))\
 
     _forums = Forum.objects.filter(category__in=_categories)\

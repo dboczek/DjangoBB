@@ -5,6 +5,7 @@ from hashlib import sha1
 
 from django.db import models
 from django.contrib.auth.models import User, Group
+from django.contrib.sites.models import Site
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from django.db.models.signals import post_save
@@ -62,6 +63,7 @@ class Category(models.Model):
     groups = models.ManyToManyField(Group,blank=True, null=True, verbose_name=_('Groups'), help_text=_('Only users from these groups can see this category'))
     position = models.IntegerField(_('Position'), blank=True, default=0)
     language = models.CharField(_('Language'), max_length=6, default=settings.LANGUAGE_CODE)
+    site = models.ForeignKey(Site)
 
     class Meta:
         ordering = ['position']
@@ -97,7 +99,7 @@ class Forum(models.Model):
     name = models.CharField(_('Name'), max_length=80)
     position = models.IntegerField(_('Position'), blank=True, default=0)
     description = models.TextField(_('Description'), blank=True, default='')
-    moderators = models.ManyToManyField(User, blank=True, null=True, verbose_name=_('Moderators'))
+    moderators = models.ManyToManyField(User, blank=True, null=True, verbose_name=_('Moderators'), limit_choices_to={'is_staff': True})
     updated = models.DateTimeField(_('Updated'), auto_now=True)
     post_count = models.IntegerField(_('Post count'), blank=True, default=0)
     topic_count = models.IntegerField(_('Topic count'), blank=True, default=0)

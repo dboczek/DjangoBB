@@ -8,7 +8,7 @@ from djangobb_forum.models import Category, Forum, Topic, Post, Profile, Reputat
 
 
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ['name', 'position', 'forum_count']
+    list_display = ['name', 'position', 'site', 'language', 'forum_count']
 
 class ForumAdmin(admin.ModelAdmin):
     list_display = ['name', 'category', 'position', 'topic_count']

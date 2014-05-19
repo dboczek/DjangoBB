@@ -193,7 +193,7 @@
 		<br />
 		<select name="id" id="forum_id" onchange="window.location=('{% url djangobb:index %}'+this.options[this.selectedIndex].value)">
 			{% for category in categories %}
-				<optgroup label="{{ category }}">
+				<optgroup label="{{ category.name }}">
 					{% for forum in category.forums.all %}
 						<option value="{{ forum.id }}">{{ forum }}</option>
 					{% endfor %}

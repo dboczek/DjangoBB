@@ -18,7 +18,7 @@
 						<label>{% trans "Move to" %}<br />
 						<select name="to_forum">
 						{% for category in categories %}
-							<optgroup label="{{ category }}">
+							<optgroup label="{{ category.name }}">
 							{% for forum in category.forums.all %}
 								{% if forum != exclude_forum %}
 									<option value="{{ forum.id }}">{{ forum.name }}</option>

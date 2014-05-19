@@ -71,7 +71,7 @@ class Category(models.Model):
         verbose_name_plural = _('Categories')
 
     def __unicode__(self):
-        return self.name
+        return u'%s (%s, %s)' % (self.name, self.language, self.site.name)
 
     def forum_count(self):
         return self.forums.all().count()

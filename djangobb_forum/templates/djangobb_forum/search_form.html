@@ -28,7 +28,7 @@
 						<select id="forum" name="forum">
 							<option value="0">{% trans "All forums" %}</option>
 							{% for category in categories %}
-							<optgroup label="{{ category }}">
+							<optgroup label="{{ category.name }}">
 								{% for forum in category.forums.all %}
 								<option value="{{ forum.id }}">{{ forum }}</option>
 								{% endfor %}

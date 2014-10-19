@@ -122,7 +122,7 @@ def search(request):
         #FIXME: show_user for anonymous raise exception, 
         #django bug http://code.djangoproject.com/changeset/14087 :|
         groups = request.user.groups.all() or [] #removed after django > 1.2.3 release
-        topics = Topic.objects.filter(forum__category__language=get_language()).filter(
+        topics = Topic.objects.filter(forum__category__language=get_language(), forum__category__site=get_current_site(request)).filter(
                    Q(forum__category__groups__in=groups) | \
                    Q(forum__category__groups__isnull=True))
         if action == 'show_24h':
